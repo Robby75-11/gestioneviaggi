@@ -13,9 +13,14 @@ public class Viaggio {
 
     @Id
     @GeneratedValue
+    private Long id;
+
+    @Column(nullable = false)
     private String destinazione;
+
+    @Column(nullable = false)
     private LocalDate data;
 
     @Enumerated(EnumType.STRING)
-    private StatoViaggio statoviaggio;
+    private StatoViaggio statoViaggio;
 }

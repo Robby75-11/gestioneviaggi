@@ -13,7 +13,7 @@ public class Dipendente {
 
     @Id
     @GeneratedValue
-    private int Id;
+    private Long id;
     private String username;
     private String nome;
     private String cognome;

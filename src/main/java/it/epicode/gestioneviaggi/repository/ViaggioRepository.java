@@ -1,4 +1,8 @@
 package it.epicode.gestioneviaggi.repository;
 
-public interface ViaggioRepository {
+import it.epicode.gestioneviaggi.model.Prenotazione;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
+
+public interface ViaggioRepository extends JpaRepository<Prenotazione, Long>{
 }
