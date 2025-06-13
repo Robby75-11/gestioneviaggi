@@ -9,6 +9,7 @@ import it.epicode.gestioneviaggi.repository.DipendenteRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender; // Mantenuto se usato altrove
 
 import org.springframework.stereotype.Service;
@@ -32,9 +33,9 @@ public class DipendenteService {
     @Autowired(required = false) // 'required = false' se Cloudinary non è sempre configurato (es. in test)
     private Cloudinary cloudinary;
 
-    // Se intendi usare JavaMailSender, decommenta e iniettalo
-    // @Autowired
-    // private JavaMailSender javaMailSender;
+
+     @Autowired
+     private JavaMailSender javaMailSender;
 
     // --- Metodi Helper ---
     private DipendenteDto mapToDipendenteDto(Dipendente dipendente) {
@@ -89,8 +90,10 @@ public class DipendenteService {
             dipendente.setImmagineProfiloUrl(dipendenteDto.getImmagineProfiloUrl());
         }
 
-
+       sendMail("ralbergo7@gmail.com");
         Dipendente savedDipendente = dipendenteRepository.save(dipendente);
+
+
         return mapToDipendenteDto(savedDipendente);
     }
 
@@ -200,6 +203,13 @@ public class DipendenteService {
         }
         dipendenteRepository.deleteById(id);
     }
+    private void sendMail(String email) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Registrazione Servizio rest");
+        message.setText("Registrazione al servizio rest avvenuta con successo");
 
+        javaMailSender.send(message);
+    }
 
 }

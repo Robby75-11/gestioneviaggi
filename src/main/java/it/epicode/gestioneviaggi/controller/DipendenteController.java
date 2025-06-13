@@ -26,7 +26,7 @@ public class DipendenteController {
     private DipendenteService dipendenteService;
 
 
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<DipendenteDto> registerDipendente(@RequestBody DipendenteDto dipendenteDto) {
         try {
 
