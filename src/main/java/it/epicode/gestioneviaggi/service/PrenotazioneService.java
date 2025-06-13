@@ -3,10 +3,10 @@ package it.epicode.gestioneviaggi.service;
 import it.epicode.gestioneviaggi.model.Prenotazione;
 import it.epicode.gestioneviaggi.model.Dipendente;
 import it.epicode.gestioneviaggi.model.Viaggio;
-import it.epicode.gestioneviaggi.dto.PrenotazioneDto; // Corretto: PrenotazioneDto
+import it.epicode.gestioneviaggi.dto.PrenotazioneDto;
 import it.epicode.gestioneviaggi.repository.PrenotazioneRepository;
-import it.epicode.gestioneviaggi.repository.DipendenteRepository; // Necessario per associare il dipendente
-import it.epicode.gestioneviaggi.repository.ViaggioRepository;     // Necessario per associare il viaggio
+import it.epicode.gestioneviaggi.repository.DipendenteRepository;
+import it.epicode.gestioneviaggi.repository.ViaggioRepository;
 import it.epicode.gestioneviaggi.exception.NotFoundException;
 import it.epicode.gestioneviaggi.exception.ValidationException;
 
@@ -27,77 +27,97 @@ public class PrenotazioneService {
     private PrenotazioneRepository prenotazioneRepository;
 
     @Autowired
-    private DipendenteRepository dipendenteRepository; // Per trovare il dipendente
+    private DipendenteRepository dipendenteRepository; // Per trovare il dipendente associato
     @Autowired
-    private ViaggioRepository viaggioRepository;       // Per trovare il viaggio
+    private ViaggioRepository viaggioRepository;       // Per trovare il viaggio associato
 
-    // Metodo helper per mappare Entity a DTO
+    // --- Metodi Helper di Mappatura ---
+
+    // Mappa un'entità Prenotazione a un DTO PrenotazioneDto
     private PrenotazioneDto mapToPrenotazioneDto(Prenotazione prenotazione) {
         PrenotazioneDto dto = new PrenotazioneDto();
         dto.setId(prenotazione.getId());
-        dto.setdataPrenotazione(prenotazione.getDataPrenotazione());
-        dto.setnumeroPosti(prenotazione.getNumeroPosti());
+        dto.setDataPrenotazione(prenotazione.getDataPrenotazione()); // Corrisponde al campo nel DTO
+        dto.setNumeroPosti(prenotazione.getNumeroPosti());
+        dto.setNotePreferenze(prenotazione.getNotePreferenze());
+
+        // Associa gli ID delle entità correlate al DTO
         if (prenotazione.getDipendente() != null) {
             dto.setDipendenteId(prenotazione.getDipendente().getId());
         }
         if (prenotazione.getViaggio() != null) {
-            dto.setViaggioId(prenotazione.getViaggio().getId());
+            dto.setIdViaggio(prenotazione.getViaggio().getId());
         }
         return dto;
     }
 
-    // Metodo helper per mappare DTO a Entity (per la creazione/aggiornamento)
+    // Mappa un DTO PrenotazioneDto a un'entità Prenotazione
+    // (Questo metodo NON imposta ID, Viaggio o Dipendente, ma solo i campi diretti del DTO)
     private Prenotazione mapToPrenotazioneEntity(PrenotazioneDto dto, Prenotazione prenotazione) {
-        prenotazione.setDataPrenotazione(dto.getDataPrenotazione());
+        prenotazione.setDataPrenotazione(dto.getDataPrenotazione()); // Mappa la data della prenotazione
         prenotazione.setNumeroPosti(dto.getNumeroPosti());
+        prenotazione.setNotePreferenze(dto.getNotePreferenze());
         return prenotazione;
     }
 
+    // --- Operazioni CRUD ---
+
     /**
-     * Corrisponde all'operazione SAVE (Crea una nuova prenotazione).
+     * Crea una nuova prenotazione nel sistema.
+     * Controlla la validità dei dati, la disponibilità dei posti e associa le entità correlate.
+     *
      * @param prenotazioneDto DTO contenente i dati della prenotazione da salvare.
      * @return Il DTO della prenotazione appena salvata.
-     * @throws ValidationException se i dati della prenotazione non sono validi o risorse non disponibili.
+     * @throws ValidationException se i dati della prenotazione non sono validi o non ci sono posti.
      * @throws NotFoundException se il dipendente o il viaggio specificati non esistono.
      */
     @Transactional
     public PrenotazioneDto save(PrenotazioneDto prenotazioneDto) throws ValidationException, NotFoundException {
+        // Validazioni iniziali sui dati del DTO
         if (prenotazioneDto.getDataPrenotazione().isAfter(LocalDate.now())) {
-            throw new ValidationException("La data di prenotazione non può essere nel futuro.");
+            throw new ValidationException("La data della prenotazione non può essere nel futuro.");
         }
         if (prenotazioneDto.getNumeroPosti() <= 0) {
-            throw new ValidationException("Il numero di posti deve essere maggiore di zero.");
+            throw new ValidationException("Il numero di posti deve essere almeno 1.");
         }
 
-        // Trova il dipendente
+        // Recupera le entità Dipendente e Viaggio usando gli ID dal DTO
         Dipendente dipendente = dipendenteRepository.findById(prenotazioneDto.getDipendenteId())
                 .orElseThrow(() -> new NotFoundException("Dipendente con ID " + prenotazioneDto.getDipendenteId() + " non trovato."));
 
-        // Trova il viaggio
-        Viaggio viaggio = viaggioRepository.findById(prenotazioneDto.getViaggioId())
-                .orElseThrow(() -> new NotFoundException("Viaggio con ID " + prenotazioneDto.getViaggioId() + " non trovato.")).getViaggio();
+        Viaggio viaggio = viaggioRepository.findById(prenotazioneDto.getIdViaggio())
+                .orElseThrow(() -> new NotFoundException("Viaggio con ID " + prenotazioneDto.getIdViaggio() + " non trovato."));
 
-        // Controlla la disponibilità dei posti nel viaggio
-        if (viaggio.getNumeroposti() < prenotazioneDto.getNumeroPosti()) {
-            throw new ValidationException("Non ci sono abbastanza posti disponibili per il viaggio selezionato.");
+        // Verifica la disponibilità dei posti nel viaggio
+        if (viaggio.getPostiDisponibili() < prenotazioneDto.getNumeroPosti()) {
+            throw new ValidationException("Non ci sono abbastanza posti disponibili per il viaggio selezionato. Posti rimasti: " + viaggio.getPostiDisponibili());
         }
 
-        // Crea la prenotazione
+        // Crea la nuova entità Prenotazione e mappa i campi dal DTO
         Prenotazione prenotazione = new Prenotazione();
         prenotazione = mapToPrenotazioneEntity(prenotazioneDto, prenotazione);
-        prenotazione.setDipendente(dipendente);
-        prenotazione.setViaggio(viaggio);
+        prenotazione.setDipendente(dipendente); // Associa il dipendente
+        prenotazione.setViaggio(viaggio);       // Associa il viaggio
+        // L'entità potrebbe avere anche `dataRichiesta` se diversa da `dataPrenotazione`,
+        // ma la logica qui è che `dataPrenotazione` è la data dell'effettiva prenotazione.
+        // Se `dataRichiesta` nell'entity è una data diversa, dovrai popolarla qui.
+        // Per ora, assumo che `dataPrenotazione` nel DTO si mappi a `dataPrenotazione` nell'entity.
+        // Se `dataRichiesta` nell'entity è la data di creazione della prenotazione, puoi impostarla:
+        // prenotazione.setDataRichiesta(LocalDate.now()); // Esempio se fosse la data di creazione
 
-        // Aggiorna i posti disponibili nel viaggio
+
+        // Aggiorna il numero di posti disponibili nel viaggio
         viaggio.setPostiDisponibili(viaggio.getPostiDisponibili() - prenotazioneDto.getNumeroPosti());
-        viaggioRepository.save(viaggio); // Salva l'aggiornamento dei posti nel viaggio
+        viaggioRepository.save(viaggio); // Salva il viaggio con i posti aggiornati
 
+        // Salva la prenotazione nel database
         Prenotazione savedPrenotazione = prenotazioneRepository.save(prenotazione);
-        return mapToPrenotazioneDto(savedPrenotazione);
+        return mapToPrenotazioneDto(savedPrenotazione); // Restituisce il DTO della prenotazione salvata
     }
 
     /**
-     * Corrisponde all'operazione GET (Recupera tutte le prenotazioni).
+     * Recupera tutte le prenotazioni esistenti.
+     *
      * @return Una lista di DTO di tutte le prenotazioni.
      */
     @Transactional(readOnly = true)
@@ -108,10 +128,11 @@ public class PrenotazioneService {
     }
 
     /**
-     * Corrisponde all'operazione GET (Recupera una prenotazione tramite ID).
+     * Recupera una singola prenotazione tramite il suo ID.
+     *
      * @param id ID della prenotazione da recuperare.
      * @return Il DTO della prenotazione trovata.
-     * @throws NotFoundException se la prenotazione non esiste.
+     * @throws NotFoundException se la prenotazione con l'ID specificato non esiste.
      */
     @Transactional(readOnly = true)
     public PrenotazioneDto get(Long id) throws NotFoundException {
@@ -121,8 +142,9 @@ public class PrenotazioneService {
     }
 
     /**
-     * Corrisponde all'operazione GET (Recupera tutte le prenotazioni con paginazione).
-     * @param pageable Oggetto Pageable per la paginazione.
+     * Recupera tutte le prenotazioni con paginazione.
+     *
+     * @param pageable Oggetto Pageable per la paginazione e l'ordinamento.
      * @return Una pagina di DTO di prenotazioni.
      */
     @Transactional(readOnly = true)
@@ -132,67 +154,75 @@ public class PrenotazioneService {
     }
 
     /**
-     * Corrisponde all'operazione UPDATE (Aggiorna una prenotazione esistente).
+     * Aggiorna una prenotazione esistente.
+     * Gestisce il cambiamento del numero di posti o del viaggio associato.
+     *
      * @param id ID della prenotazione da aggiornare.
      * @param prenotazioneDto DTO contenente i nuovi dati della prenotazione.
      * @return Il DTO della prenotazione aggiornata.
      * @throws NotFoundException se la prenotazione, il dipendente o il viaggio non esistono.
-     * @throws ValidationException se i dati della prenotazione non sono validi o risorse non disponibili.
+     * @throws ValidationException se i dati non sono validi o non ci sono abbastanza posti.
      */
     @Transactional
     public PrenotazioneDto update(Long id, PrenotazioneDto prenotazioneDto) throws NotFoundException, ValidationException {
+        // Recupera la prenotazione esistente
         Prenotazione existingPrenotazione = prenotazioneRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Prenotazione con ID " + id + " non trovata"));
 
-        // Se cambiano dipendenteId o viaggioId, ritroviamo le entità
-        Dipendente newDipendente = existingPrenotazione.getDipendente();
-        if (!newDipendente.getId().equals(prenotazioneDto.getDipendenteId())) {
-            newDipendente = dipendenteRepository.findById(prenotazioneDto.getDipendenteId())
-                    .orElseThrow(() -> new NotFoundException("Nuovo Dipendente con ID " + prenotazioneDto.getDipendenteId() + " non trovato."));
-        }
-
+        // Salva il vecchio numero di posti e il vecchio viaggio prima delle modifiche
+        int oldNumeroPosti = existingPrenotazione.getNumeroPosti();
         Viaggio oldViaggio = existingPrenotazione.getViaggio();
-        Viaggio newViaggio = existingPrenotazione.getViaggio();
-        int oldPosti = existingPrenotazione.getNumeroPosti();
 
-        if (!newViaggio.getId().equals(prenotazioneDto.getViaggioId())) {
-            newViaggio = viaggioRepository.findById(prenotazioneDto.getViaggioId())
-                    .orElseThrow(() -> new NotFoundException("Nuovo Viaggio con ID " + prenotazioneDto.getViaggioId() + " non trovato."));
-            // Ripristina posti del vecchio viaggio se il viaggio è cambiato
-            oldViaggio.setPostiDisponibili(oldViaggio.getPostiDisponibili() + oldPosti);
-            viaggioRepository.save(oldViaggio);
-        }
+        // Recupera il nuovo dipendente e il nuovo viaggio (potrebbero essere gli stessi)
+        Dipendente newDipendente = dipendenteRepository.findById(prenotazioneDto.getDipendenteId())
+                .orElseThrow(() -> new NotFoundException("Dipendente con ID " + prenotazioneDto.getDipendenteId() + " non trovato."));
 
-        // Validazioni
+        Viaggio newViaggio = viaggioRepository.findById(prenotazioneDto.getIdViaggio())
+                .orElseThrow(() -> new NotFoundException("Viaggio con ID " + prenotazioneDto.getIdViaggio() + " non trovato."));
+
+        // Validazioni sui dati del DTO
         if (prenotazioneDto.getDataPrenotazione().isAfter(LocalDate.now())) {
-            throw new ValidationException("La data di prenotazione non può essere nel futuro.");
+            throw new ValidationException("La data della prenotazione non può essere nel futuro.");
         }
         if (prenotazioneDto.getNumeroPosti() <= 0) {
-            throw new ValidationException("Il numero di posti deve essere maggiore di zero.");
+            throw new ValidationException("Il numero di posti deve essere almeno 1.");
         }
 
-        // Gestione posti disponibili per il nuovo/stesso viaggio
-        int deltaPosti = prenotazioneDto.getNumeroPosti() - oldPosti;
+        // Logica per aggiornare i posti disponibili se il viaggio cambia o il numero di posti cambia
+        if (!oldViaggio.getId().equals(newViaggio.getId())) {
+            // Il viaggio è cambiato: ripristina i posti nel vecchio viaggio e sottrai dal nuovo
+            oldViaggio.setPostiDisponibili(oldViaggio.getPostiDisponibili() + oldNumeroPosti);
+            viaggioRepository.save(oldViaggio); // Salva il ripristino per il vecchio viaggio
 
-        if (newViaggio.getPostiDisponibili() < deltaPosti) { // Se ho bisogno di più posti di quanti ce ne siano
-            throw new ValidationException("Non ci sono abbastanza posti disponibili per il numero richiesto nel viaggio selezionato.");
+            if (newViaggio.getPostiDisponibili() < prenotazioneDto.getNumeroPosti()) {
+                // Non ci sono posti sufficienti nel nuovo viaggio per la prenotazione
+                throw new ValidationException("Non ci sono abbastanza posti disponibili nel nuovo viaggio. Posti rimasti: " + newViaggio.getPostiDisponibili());
+            }
+            newViaggio.setPostiDisponibili(newViaggio.getPostiDisponibili() - prenotazioneDto.getNumeroPosti());
+
+        } else {
+            // Il viaggio è lo stesso, gestisci solo la variazione del numero di posti
+            int deltaPosti = prenotazioneDto.getNumeroPosti() - oldNumeroPosti;
+            if (newViaggio.getPostiDisponibili() < deltaPosti) {
+                throw new ValidationException("Non ci sono abbastanza posti disponibili per questa modifica. Posti rimasti: " + newViaggio.getPostiDisponibili());
+            }
+            newViaggio.setPostiDisponibili(newViaggio.getPostiDisponibili() - deltaPosti);
         }
 
-        newViaggio.setPostiDisponibili(newViaggio.getPostiDisponibili() - deltaPosti);
-        viaggioRepository.save(newViaggio); // Salva l'aggiornamento dei posti
+        viaggioRepository.save(newViaggio); // Salva l'aggiornamento dei posti nel nuovo/stesso viaggio
 
-        // Aggiorna la prenotazione
+        // Aggiorna l'entità Prenotazione con i nuovi dati dal DTO
         existingPrenotazione = mapToPrenotazioneEntity(prenotazioneDto, existingPrenotazione);
-        existingPrenotazione.setDipendente(newDipendente);
-        existingPrenotazione.setViaggio(newViaggio);
+        existingPrenotazione.setDipendente(newDipendente); // Associa il nuovo dipendente
+        existingPrenotazione.setViaggio(newViaggio);       // Associa il nuovo viaggio
 
         Prenotazione updatedPrenotazione = prenotazioneRepository.save(existingPrenotazione);
         return mapToPrenotazioneDto(updatedPrenotazione);
     }
 
-
     /**
-     * Corrisponde all'operazione DELETE (Elimina una prenotazione).
+     * Elimina una prenotazione esistente e ripristina i posti nel viaggio associato.
+     *
      * @param id ID della prenotazione da eliminare.
      * @throws NotFoundException se la prenotazione non esiste.
      */
@@ -201,11 +231,11 @@ public class PrenotazioneService {
         Prenotazione prenotazione = prenotazioneRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Prenotazione con ID " + id + " non trovata"));
 
-        // Ripristina i posti disponibili del viaggio
+        // Ripristina i posti disponibili nel viaggio
         Viaggio viaggio = prenotazione.getViaggio();
         if (viaggio != null) {
             viaggio.setPostiDisponibili(viaggio.getPostiDisponibili() + prenotazione.getNumeroPosti());
-            viaggioRepository.save(viaggio);
+            viaggioRepository.save(viaggio); // Salva il viaggio con i posti ripristinati
         }
 
         prenotazioneRepository.deleteById(id);

@@ -10,21 +10,20 @@ import java.time.LocalDate;
 public class PrenotazioneDto {
 
     private Long id; //sarà nullo in Post, valorizzato in GET
+
     @NotNull(message = "L'ID del dipendente non può essere nullo")
-    private int dipendenteId;
+    private Long dipendenteId;
 
     @Min(value = 1, message = "Il numero di posti deve essere almeno 1")
     private int numeroPosti;
 
     @NotNull(message = "L'id del viaggio non può essere nullo")
-    private int idViaggio;
+    private Long idViaggio;
 
-    @NotNull(message = "Il viaggio è obbligatorio")
-    private Long viaggioId;
-    // La dataRichiesta sarà la data in cui viene creata la prenotazione,
+       // La dataRichiesta sarà la data in cui viene creata la prenotazione,
     // può essere generata dal backend o inviata (ma è più comune generarla)
     @NotNull(message = "La data della prenotazione è obbligatoria")
-    private LocalDate dataRichiesta; // Può essere generata dal service
+    private LocalDate dataPrenotazione; // Può essere generata dal service
 
     private String notePreferenze;
 

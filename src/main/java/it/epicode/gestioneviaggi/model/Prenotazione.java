@@ -7,7 +7,12 @@ import java.time.LocalDate;
 
 @Entity
 @Data
-
+@Table(
+        name = "prenotazioni",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"dipendente_id", "data_prenotazione"})
+        }
+)
 public class Prenotazione {
 
     @Id

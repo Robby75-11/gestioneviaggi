@@ -23,4 +23,7 @@ public class Viaggio {
 
     @Enumerated(EnumType.STRING)
     private StatoViaggio statoViaggio;
+
+    @Column(nullable = false) // Potresti volerlo nullable o con un default
+    private int postiDisponibili;
 }

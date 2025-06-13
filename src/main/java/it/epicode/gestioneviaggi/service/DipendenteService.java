@@ -94,7 +94,12 @@ public class DipendenteService {
         return mapToDipendenteDto(savedDipendente);
     }
 
-
+    @Transactional(readOnly = true)
+    public List<DipendenteDto> get() { // Questo è il metodo che il Controller cerca!
+        return dipendenteRepository.findAll().stream()
+                .map(this::mapToDipendenteDto)
+                .collect(Collectors.toList());
+    }
     /**
      * Corrisponde all'operazione GET (Recupera un dipendente tramite ID).
      * @param id ID del dipendente da recuperare.
@@ -195,5 +200,6 @@ public class DipendenteService {
         }
         dipendenteRepository.deleteById(id);
     }
+
 
 }
