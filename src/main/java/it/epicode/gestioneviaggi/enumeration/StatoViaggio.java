@@ -1,5 +1,5 @@
 package it.epicode.gestioneviaggi.enumeration;
 
-public enum Stato {
+public enum StatoViaggio {
     IN_PROGRAMMA, COMPLETATO
 }
