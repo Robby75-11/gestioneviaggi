@@ -90,9 +90,8 @@ public class DipendenteService {
             dipendente.setImmagineProfiloUrl(dipendenteDto.getImmagineProfiloUrl());
         }
 
-    //   sendMail("ralbergo7@gmail.com");
+//        sendMail(dipendenteDto.getEmail());
         Dipendente savedDipendente = dipendenteRepository.save(dipendente);
-
 
         return mapToDipendenteDto(savedDipendente);
     }
