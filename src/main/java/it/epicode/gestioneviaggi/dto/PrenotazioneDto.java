@@ -27,6 +27,4 @@ public class PrenotazioneDto {
 
     private String notePreferenze;
 
-
-
 }

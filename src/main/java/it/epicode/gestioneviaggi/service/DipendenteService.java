@@ -34,8 +34,8 @@ public class DipendenteService {
     private Cloudinary cloudinary;
 
 
-     @Autowired
-     private JavaMailSender javaMailSender;
+//     @Autowired
+//     private JavaMailSender javaMailSender;
 
     // --- Metodi Helper ---
     private DipendenteDto mapToDipendenteDto(Dipendente dipendente) {
@@ -90,7 +90,7 @@ public class DipendenteService {
             dipendente.setImmagineProfiloUrl(dipendenteDto.getImmagineProfiloUrl());
         }
 
-       sendMail("ralbergo7@gmail.com");
+    //   sendMail("ralbergo7@gmail.com");
         Dipendente savedDipendente = dipendenteRepository.save(dipendente);
 
 
@@ -137,7 +137,7 @@ public class DipendenteService {
      * @throws ValidationException se username o email sono già in uso da un altro dipendente.
      */
     @Transactional
-    public DipendenteDto update(Long id, DipendenteDto dipendenteDto) throws ValidationException, NotFoundException { // Cambiato 'int' a 'Long', e 'dipendenteDTO' a 'dipendenteDto'
+    public DipendenteDto update(Long id, DipendenteDto dipendenteDto) throws ValidationException, NotFoundException {
         Dipendente existingDipendente = dipendenteRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Dipendente con ID " + id + " non trovato"));
 
@@ -197,19 +197,19 @@ public class DipendenteService {
      * @throws NotFoundException se il dipendente non esiste.
      */
     @Transactional
-    public void delete(Long id) throws NotFoundException { // Cambiato 'int' a 'Long'
+    public void delete(Long id) throws NotFoundException {
         if (!dipendenteRepository.existsById(id)) {
             throw new NotFoundException("Dipendente con ID " + id + " non trovato");
         }
         dipendenteRepository.deleteById(id);
     }
-    private void sendMail(String email) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Registrazione Servizio rest");
-        message.setText("Registrazione al servizio rest avvenuta con successo");
-
-        javaMailSender.send(message);
-    }
+//    private void sendMail(String email) {
+//        SimpleMailMessage message = new SimpleMailMessage();
+//        message.setTo(email);
+//        message.setSubject("Registrazione Servizio rest");
+//        message.setText("Registrazione al servizio rest avvenuta con successo");
+//
+//        javaMailSender.send(message);
+//    }
 
 }

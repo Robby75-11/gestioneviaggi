@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/dipendenti") // Maps all requests starting with /api/dipendenti
+@RequestMapping("/dipendenti") //
 public class DipendenteController {
 
     @Autowired
@@ -27,7 +27,7 @@ public class DipendenteController {
 
 
     @PostMapping
-    public ResponseEntity<DipendenteDto> registerDipendente(@RequestBody DipendenteDto dipendenteDto) {
+    public ResponseEntity<DipendenteDto> Dipendente(@RequestBody DipendenteDto dipendenteDto) {
         try {
 
             DipendenteDto createdDipendente = dipendenteService.save(dipendenteDto);
