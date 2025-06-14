@@ -34,8 +34,8 @@ public class DipendenteService {
     private Cloudinary cloudinary;
 
 
-//     @Autowired
-//     private JavaMailSender javaMailSender;
+     @Autowired
+     private JavaMailSender javaMailSender;
 
     // --- Metodi Helper ---
     private DipendenteDto mapToDipendenteDto(Dipendente dipendente) {
@@ -90,7 +90,7 @@ public class DipendenteService {
             dipendente.setImmagineProfiloUrl(dipendenteDto.getImmagineProfiloUrl());
         }
 
-//        sendMail(dipendenteDto.getEmail());
+        sendMail(dipendenteDto.getEmail());
         Dipendente savedDipendente = dipendenteRepository.save(dipendente);
 
         return mapToDipendenteDto(savedDipendente);
@@ -202,13 +202,13 @@ public class DipendenteService {
         }
         dipendenteRepository.deleteById(id);
     }
-//    private void sendMail(String email) {
-//        SimpleMailMessage message = new SimpleMailMessage();
-//        message.setTo(email);
-//        message.setSubject("Registrazione Servizio rest");
-//        message.setText("Registrazione al servizio rest avvenuta con successo");
-//
-//        javaMailSender.send(message);
-//    }
+    private void sendMail(String email) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Registrazione Servizio rest");
+        message.setText("Registrazione al servizio rest avvenuta con successo");
+
+        javaMailSender.send(message);
+    }
 
 }
