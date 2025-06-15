@@ -51,9 +51,7 @@ public class DipendenteController {
 
     public ResponseEntity<DipendenteDto> getDipendenteById(@PathVariable Long id) {
         try {
-            // In a real application, there would be logic here to verify
-            // that the authenticated user has permission to view this ID.
-            // E.g.: If not ADMIN, the requested ID must be equal to the authenticated user's ID.
+
             DipendenteDto dipendente = dipendenteService.get(id);
             return new ResponseEntity<>(dipendente, HttpStatus.OK);
         } catch (NotFoundException e) {
@@ -74,7 +72,7 @@ public class DipendenteController {
 
     public ResponseEntity<DipendenteDto> updateDipendente(@PathVariable Long id, @RequestBody DipendenteDto dipendenteDto) {
         try {
-            // As with GET, authorization logic should verify permissions here.
+            // Come con GET, la logica di autorizzazione dovrebbe verificare i permessi qui.
             DipendenteDto updatedDipendente = dipendenteService.update(id, dipendenteDto);
             return new ResponseEntity<>(updatedDipendente, HttpStatus.OK);
         } catch (NotFoundException e) {
@@ -91,7 +89,7 @@ public class DipendenteController {
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file) { // Accepts the image file
         try {
-            // Again, authorization logic is crucial here.
+            // Anche in questo caso, la logica di autorizzazione è fondamentale.
             DipendenteDto updatedDipendente = dipendenteService.updateImmagineProfilo(id, file);
             return new ResponseEntity<>(updatedDipendente, HttpStatus.OK);
         } catch (NotFoundException e) {
