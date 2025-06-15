@@ -14,7 +14,7 @@ public class PrenotazioneDto {
     @NotNull(message = "L'ID del dipendente non può essere nullo")
     private Long dipendenteId;
 
-    @Min(value = 1, message = "Il numero di posti deve essere almeno 1")
+    @Min(value = 2, message = "Il numero di posti deve essere almeno 2")
     private int numeroPosti;
 
     @NotNull(message = "L'id del viaggio non può essere nullo")

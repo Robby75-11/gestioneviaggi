@@ -67,7 +67,7 @@ public class ViaggioService {
      * @return Il DTO del piano di viaggio appena creato.
      * @throws ValidationException se la data del viaggio è nel passato.
      */
-    @Transactional
+
     public ViaggioDto save(ViaggioDto viaggioDto) throws ValidationException {
         // Validazione: La data del viaggio non può essere nel passato per un nuovo piano.
         if (viaggioDto.getData().isBefore(LocalDate.now())) {
@@ -92,7 +92,7 @@ public class ViaggioService {
      * Recupera un elenco di tutti i piani di viaggio.
      * @return Una {@link List} di {@link ViaggioDto} che rappresenta tutti i piani di viaggio.
      */
-    @Transactional(readOnly = true)
+
     public List<ViaggioDto> get() {
         List<ViaggioDto> viaggi = viaggioRepository.findAll().stream()
                 .map(this::mapToViaggioDto)
@@ -107,7 +107,7 @@ public class ViaggioService {
      * @return Il {@link ViaggioDto} del piano di viaggio trovato.
      * @throws NotFoundException se non viene trovato alcun piano di viaggio con l'ID fornito.
      */
-    @Transactional(readOnly = true)
+
     public ViaggioDto get(Long id) throws NotFoundException {
         Viaggio viaggio = viaggioRepository.findById(id)
                 .orElseThrow(() -> {
@@ -123,7 +123,7 @@ public class ViaggioService {
      * @param pageable Oggetto {@link Pageable} per la paginazione e l'ordinamento.
      * @return Una {@link Page} di {@link ViaggioDto} che rappresenta i piani di viaggio paginati.
      */
-    @Transactional(readOnly = true)
+
     public Page<ViaggioDto> get(Pageable pageable) {
         Page<ViaggioDto> viaggiPage = viaggioRepository.findAll(pageable)
                 .map(this::mapToViaggioDto);
@@ -139,7 +139,7 @@ public class ViaggioService {
      * @throws NotFoundException se il piano di viaggio con l'ID fornito non esiste.
      * @throws ValidationException se la data di viaggio aggiornata non è valida (ad esempio, si tenta di impostare un viaggio futuro nel passato).
      */
-    @Transactional
+
     public ViaggioDto update(Long id, ViaggioDto viaggioDto) throws NotFoundException, ValidationException {
         Viaggio existingViaggio = viaggioRepository.findById(id)
                 .orElseThrow(() -> {
@@ -168,7 +168,7 @@ public class ViaggioService {
      * @param id L'ID del piano di viaggio da eliminare.
      * @throws NotFoundException se il piano di viaggio con l'ID fornito non esiste.
      */
-    @Transactional
+
     public void delete(Long id) throws NotFoundException {
         if (!viaggioRepository.existsById(id)) {
             logger.warn("Tentativo di eliminare un viaggio inesistente con ID: {}", id);

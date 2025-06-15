@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/prenotazioni") // Mappa tutte le richieste che iniziano con /api/prenotazioni
+@RequestMapping("/prenotazioni") // Mappa tutte le richieste che iniziano con /api/prenotazioni
 public class PrenotazioneController {
 
     @Autowired

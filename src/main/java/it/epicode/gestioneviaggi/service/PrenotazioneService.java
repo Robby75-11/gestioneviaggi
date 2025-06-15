@@ -71,7 +71,7 @@ public class PrenotazioneService {
      * @throws ValidationException se i dati della prenotazione non sono validi o non ci sono posti.
      * @throws NotFoundException se il dipendente o il viaggio specificati non esistono.
      */
-    @Transactional
+
     public PrenotazioneDto save(PrenotazioneDto prenotazioneDto) throws ValidationException, NotFoundException {
         // Validazioni iniziali sui dati del DTO
         if (prenotazioneDto.getDataPrenotazione().isAfter(LocalDate.now())) {
@@ -120,7 +120,7 @@ public class PrenotazioneService {
      *
      * @return Una lista di DTO di tutte le prenotazioni.
      */
-    @Transactional(readOnly = true)
+
     public List<PrenotazioneDto> get() {
         return prenotazioneRepository.findAll().stream()
                 .map(this::mapToPrenotazioneDto)
@@ -134,7 +134,7 @@ public class PrenotazioneService {
      * @return Il DTO della prenotazione trovata.
      * @throws NotFoundException se la prenotazione con l'ID specificato non esiste.
      */
-    @Transactional(readOnly = true)
+
     public PrenotazioneDto get(Long id) throws NotFoundException {
         Prenotazione prenotazione = prenotazioneRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Prenotazione con ID " + id + " non trovata"));
@@ -147,7 +147,7 @@ public class PrenotazioneService {
      * @param pageable Oggetto Pageable per la paginazione e l'ordinamento.
      * @return Una pagina di DTO di prenotazioni.
      */
-    @Transactional(readOnly = true)
+
     public Page<PrenotazioneDto> get(Pageable pageable) {
         return prenotazioneRepository.findAll(pageable)
                 .map(this::mapToPrenotazioneDto);
@@ -163,7 +163,7 @@ public class PrenotazioneService {
      * @throws NotFoundException se la prenotazione, il dipendente o il viaggio non esistono.
      * @throws ValidationException se i dati non sono validi o non ci sono abbastanza posti.
      */
-    @Transactional
+
     public PrenotazioneDto update(Long id, PrenotazioneDto prenotazioneDto) throws NotFoundException, ValidationException {
         // Recupera la prenotazione esistente
         Prenotazione existingPrenotazione = prenotazioneRepository.findById(id)
@@ -226,7 +226,7 @@ public class PrenotazioneService {
      * @param id ID della prenotazione da eliminare.
      * @throws NotFoundException se la prenotazione non esiste.
      */
-    @Transactional
+
     public void delete(Long id) throws NotFoundException {
         Prenotazione prenotazione = prenotazioneRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Prenotazione con ID " + id + " non trovata"));

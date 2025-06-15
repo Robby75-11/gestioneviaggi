@@ -70,7 +70,7 @@ public class DipendenteService {
      * @param dipendenteDto DTO contenente i dati del dipendente da salvare.
      * @return Il DTO del dipendente appena salvato.
      */
-    @Transactional
+
     public DipendenteDto save(DipendenteDto dipendenteDto) throws ValidationException {
         // Validazione unicità username e email
         if (dipendenteRepository.findByUsername(dipendenteDto.getUsername()).isPresent()) {
@@ -96,7 +96,7 @@ public class DipendenteService {
         return mapToDipendenteDto(savedDipendente);
     }
 
-    @Transactional(readOnly = true)
+
     public List<DipendenteDto> get() { // Questo è il metodo che il Controller cerca!
         return dipendenteRepository.findAll().stream()
                 .map(this::mapToDipendenteDto)
@@ -108,7 +108,7 @@ public class DipendenteService {
      * @return Il DTO del dipendente trovato.
      * @throws NotFoundException se il dipendente non esiste.
      */
-    @Transactional(readOnly = true)
+
     public DipendenteDto get(Long id) throws NotFoundException { // Cambiato 'int' a 'Long' per l'ID
         Dipendente dipendente = dipendenteRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Dipendente con ID " + id + " non trovato"));
@@ -120,7 +120,7 @@ public class DipendenteService {
      * @param pageable Oggetto Pageable per la paginazione.
      * @return Una pagina di DTO di dipendenti.
      */
-    @Transactional(readOnly = true)
+
     public Page<DipendenteDto> get(Pageable pageable) {
         return dipendenteRepository.findAll(pageable)
                 .map(this::mapToDipendenteDto);
@@ -135,7 +135,7 @@ public class DipendenteService {
      * @throws NotFoundException se il dipendente non esiste.
      * @throws ValidationException se username o email sono già in uso da un altro dipendente.
      */
-    @Transactional
+
     public DipendenteDto update(Long id, DipendenteDto dipendenteDto) throws ValidationException, NotFoundException {
         Dipendente existingDipendente = dipendenteRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Dipendente con ID " + id + " non trovato"));
@@ -168,7 +168,7 @@ public class DipendenteService {
      * @throws ValidationException se il file è vuoto o Cloudinary non è configurato.
      * @throws NotFoundException se il dipendente non è trovato.
      */
-    @Transactional
+
     public DipendenteDto updateImmagineProfilo(Long dipendenteId, MultipartFile file) throws IOException, ValidationException, NotFoundException { // Rinominato, cambiato 'int' a 'Long', restituisce DipendenteDto
         Dipendente dipendente = dipendenteRepository.findById(dipendenteId)
                 .orElseThrow(() -> new NotFoundException("Dipendente con ID " + dipendenteId + " non trovato"));
@@ -195,7 +195,7 @@ public class DipendenteService {
      * @param id ID del dipendente da eliminare.
      * @throws NotFoundException se il dipendente non esiste.
      */
-    @Transactional
+
     public void delete(Long id) throws NotFoundException {
         if (!dipendenteRepository.existsById(id)) {
             throw new NotFoundException("Dipendente con ID " + id + " non trovato");
